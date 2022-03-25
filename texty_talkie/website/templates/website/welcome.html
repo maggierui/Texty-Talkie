@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{%block title%} Welcome! {% endblock %}
+
+ {% block content %}   
+    <h1>Welcome to Texty-Talkie</h1>
+    <p>
+    A text-to-voiceover generator powered by Azure Speech Services!
+    </p>
+    <p> {{message}} 
+        <form method="post">
+            <select id="region" name="region">
+                <option selected disabled>Choose Region</option>
+              </select>
+              <select id="voice_person" name="voice_person" disabled>
+               
+              </select>
+              <textarea name="sample">{{text}}</textarea>
+            {% csrf_token %}
+            <button type="submit" name="preview" value="preview"> Preview </button>
+            <button type-"submit" name="save" value="save_mp3"> Save as MP3 </button>
+        </form>
+       
+        <br>
+       
+    </br>
+    </p>
+<script>
+////////////////////////////////////
+// data
+const region_voices = {
+    'en-US': {label: 'English (United States)', voices: [
+      {label:'Female Amber', value:'AmberNeural'},
+      {label:'Female Aria', value:'AriaNeural'},
+      {label:'Female Ashley', value:'AshleyNeural'},
+      {label:'Female Cora', value:'CoraNeural'},
+    ]},
+    'fr-CA': {label: 'French (Canada)', voices: [
+      {label:'Female Sylvie', value:'SylvieNeural'},
+      {label:'Male Antoine', value:'AntoineNeural'},
+      {label:'Male Jean', value:'JeanNeural'},
+    ]},
+  };
+  
+  ////////////////////////////////////
+  // initialize region list
+  let region_select = document.getElementById('region');
+  for (var region in region_voices) {
+    let newOption = new Option(region_voices[region].label,region);
+    region_select.add(newOption,undefined);
+  }
+  
+  
+  ////////////////////////////////////
+  // load person from change of region
+  document.getElementById('region').addEventListener('change', event => {
+    let region_key = document.getElementById('region').value;
+    let person_select = document.getElementById('voice_person');
+  
+    // remove all existing person options
+    while (person_select.options.length > 0) {
+      person_select.remove(0);
+    }
+  
+    // add person options
+    if ( ! region_voices[region_key])
+    {
+      alert('missing data for '+region_key);
+      return;
+    }
+    region_voices[region_key].voices.forEach(voice => {
+      let newOption = new Option(voice.label,voice.value);
+      person_select.add(newOption,undefined);
+    });
+  
+    // enable field
+    person_select.disabled = false;
+  
+  });
+</script>
+{% endblock %}
