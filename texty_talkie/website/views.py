@@ -5,7 +5,7 @@ from os.path import exists
 import os, os.path,time
 import azure.cognitiveservices.speech as speechsdk
 
-from voices.models import Voice, Region_lan
+#from voices.models import Voice, Region_lan
 
 # Set up the subscription info for the Speech Service:
 
@@ -69,7 +69,7 @@ def speech_synthesis_to_mp3_file(region='en-US',person='JennyNeural', text="This
             print("Speech synthesis canceled: {}".format(cancellation_details.reason))
             if cancellation_details.reason == speechsdk.CancellationReason.Error:
                 print("Error details: {}".format(cancellation_details.error_details))      
-
+    return file_name
 # Create your views here.
 
 
@@ -86,20 +86,33 @@ def welcome(request):
         print(text)
         if request.POST.get("preview")=="preview":
             speech_synthesis_with_voice(region,person, text)
-        else:
-            speech_synthesis_to_mp3_file(region,person, text)
-            
-        return render(request,"website/welcome.html",
+            return render(request,"website/welcome.html",
             {"message": "Below are all available voices for you to choose from",
              "text": text,
              "region":region
               })
+        else:
+            speech_synthesis_to_mp3_file(region,person, text)
+            file_name=speech_synthesis_to_mp3_file(region,person, text)
+            return render (request,"website/download_mp3.html",
+                           {"file_name":file_name})
+        
     
     else:
         return render(request,"website/welcome.html",
                   {"message": "Below are all available voices for you to choose from",
                    "text": text2
                    })
+
+def download_mp3(request,file_name):
+    file_path = file_name
+    file_wrapper = FileWrapper(file(file_path,'rb'))
+    file_mimetype = mimetypes.guess_type(file_path)
+    response = HttpResponse(file_wrapper, content_type=file_mimetype )
+    response['X-Sendfile'] = file_path
+    response['Content-Length'] = os.stat(file_path).st_size
+    response['Content-Disposition'] = 'attachment; filename=%s/' % smart_str(file_name) 
+    return response
 
 def about(request):
     return HttpResponse("This is a project created during the Fix, Hack, Learn week long event at E+D") 
