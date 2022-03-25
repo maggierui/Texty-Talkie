@@ -8,7 +8,7 @@
     </p>
     <p> {{message}} 
         <form method="post">
-            <select id="region" name="region">
+            <select id="region" name="region" >
                 <option selected disabled>Choose Region</option>
               </select>
               <select id="voice_person" name="voice_person" disabled>
@@ -49,6 +49,14 @@ const region_voices = {
     region_select.add(newOption,undefined);
   }
   
+  ////////////////////////////////////
+  //set selected region when reloaded
+  //for (var opt, j=0,opt=region_select.options;j++){
+  //    if (opt.value=={{region}}){
+   //       region_select.selectedIndex=j;
+  //        break;
+   //   }
+  //}
   
   ////////////////////////////////////
   // load person from change of region

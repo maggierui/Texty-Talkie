@@ -1,6 +1,8 @@
 from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.forms import modelform_factory
+from os.path import exists
+import os, os.path,time
 import azure.cognitiveservices.speech as speechsdk
 
 from voices.models import Voice, Region_lan
@@ -9,7 +11,7 @@ from voices.models import Voice, Region_lan
 
 speech_key, service_region = "e1a022e65fba43b58b865d11802bac0d", "eastus"
 
-def speech_synthesis_with_voice(region='en-US',person='JennyNeural', text="This is sample"):
+def speech_synthesis_with_voice(region='en-US',person='JennyNeural', text="This is a sample"):
     #"""performs speech synthesis to the default speaker with specified voice"""
     # Creates an instance of a speech config with specified subscription key and service region.
     speech_config = speechsdk.SpeechConfig(subscription=speech_key, region=service_region)
@@ -27,30 +29,71 @@ def speech_synthesis_with_voice(region='en-US',person='JennyNeural', text="This 
 
     # Receives a text from console input and synthesizes it to speaker.
     result = speech_synthesizer.speak_text_async(text).get()
-        
+
+
+def speech_synthesis_to_mp3_file(region='en-US',person='JennyNeural', text="This is a sample"):
+    """performs speech synthesis to an mp3 file"""
+    # Creates an instance of a speech config with specified subscription key and service region.
+    speech_config = speechsdk.SpeechConfig(subscription=speech_key, region=service_region)
+
+    # Sets the synthesis output format.
+    speech_config.set_speech_synthesis_output_format(speechsdk.SpeechSynthesisOutputFormat.Audio16Khz32KBitRateMonoMp3)
+
+    # And, you can try get_voices_async method to get all available voices (see speech_synthesis_get_available_voices() sample below).
+    voice = "Microsoft Server Speech Text to Speech Voice ({}, {})".format(region,person)
+    speech_config.speech_synthesis_voice_name = voice
+  
+    # Creates a speech synthesizer using file as audio output.
+    # Replace with your own audio file name.
+    ts=time.time()
+    file_name = "mp3\{}{}{}.mp3".format(region,person,ts)
+    audio_number=len([mp3 for mp3 in os.listdir('.') if os.path.isfile(mp3)])
+    print("the total number of mp3 files in this folder is {}".format(audio_number))
+    if exists(file_name) is True:
+        file_name="mp3\{}{}{}{}.mp3".format(region,person,ts,audio_number)
+    
+    file_config = speechsdk.audio.AudioOutputConfig(filename=file_name)
+    speech_synthesizer = speechsdk.SpeechSynthesizer(speech_config=speech_config, audio_config=file_config)
+
+       # Subscribes to events
+    speech_synthesizer.synthesis_started.connect(lambda evt: print("Synthesis started: {}".format(evt)))
+    speech_synthesizer.synthesizing.connect(lambda evt: print("Synthesis ongoing, audio chunk received: {}".format(evt)))
+    speech_synthesizer.synthesis_completed.connect(lambda evt: print("Synthesis completed: {}".format(evt)))
+    
+    result = speech_synthesizer.speak_text_async(text).get()
+        # Check result
+    if result.reason == speechsdk.ResultReason.SynthesizingAudioCompleted:
+            print("Speech synthesized for text [{}], and the audio was saved to [{}]".format(text, file_name))
+    elif result.reason == speechsdk.ResultReason.Canceled:
+            cancellation_details = result.cancellation_details
+            print("Speech synthesis canceled: {}".format(cancellation_details.reason))
+            if cancellation_details.reason == speechsdk.CancellationReason.Error:
+                print("Error details: {}".format(cancellation_details.error_details))      
 
 # Create your views here.
 
-#Texty_TalkieForm=modelform_factory(Region_lan, exclude=[])
-    
 
 def welcome(request):
     text2 =''
     if request.method=="POST":
-        #user has chosen voice, process data
-       # form=request.POST
-        #if form.is_valid():
-            region=request.POST.get("region") #This line pass the actual region as it gets an integer for the order of the region in Voice region.
-            person=request.POST.get("voice_person")
-            text=request.POST.get("sample")            
-            print(region)
-            print(person)
-            print(text)
+        
+        #user has pressed the Preview button
+        region=request.POST.get("region") #This line pass the actual region as it gets an integer for the order of the region in Voice region.
+        person=request.POST.get("voice_person")
+        text=request.POST.get("sample")           
+        print(region)
+        print(person)
+        print(text)
+        if request.POST.get("preview")=="preview":
             speech_synthesis_with_voice(region,person, text)
-            return render(request,"website/welcome.html",
-                {"message": "Below2 are all available voices for you to choose from",
-                 "text": text
-                  })
+        else:
+            speech_synthesis_to_mp3_file(region,person, text)
+            
+        return render(request,"website/welcome.html",
+            {"message": "Below are all available voices for you to choose from",
+             "text": text,
+             "region":region
+              })
     
     else:
         return render(request,"website/welcome.html",
