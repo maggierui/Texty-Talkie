@@ -21,5 +21,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', welcome,name="welcome"),
     path('about',about,name="about"),
-    path(r'^(?P<file_name>.+)$',download_mp3,name="download_mp3")
+    path("download_mp3",download_mp3,name="download_mp3"),
+    path("<str:file_name>",download_mp3,name="download_mp3")
 ]
