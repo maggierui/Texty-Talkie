@@ -4,6 +4,8 @@ from django.forms import modelform_factory
 from os.path import exists
 import os, os.path,time
 import azure.cognitiveservices.speech as speechsdk
+import mimetypes
+
 
 #from voices.models import Voice, Region_lan
 
@@ -46,13 +48,15 @@ def speech_synthesis_to_mp3_file(region='en-US',person='JennyNeural', text="This
     # Creates a speech synthesizer using file as audio output.
     # Replace with your own audio file name.
     ts=time.time()
-    file_name = "mp3\{}{}{}.mp3".format(region,person,ts)
-    audio_number=len([mp3 for mp3 in os.listdir('.') if os.path.isfile(mp3)])
-    print("the total number of mp3 files in this folder is {}".format(audio_number))
-    if exists(file_name) is True:
-        file_name="mp3\{}{}{}{}.mp3".format(region,person,ts,audio_number)
+    file_name = "{}{}{}.mp3".format(region,person,ts)
     
-    file_config = speechsdk.audio.AudioOutputConfig(filename=file_name)
+    audio_number=len([mp3 for mp3 in os.listdir('mp3') if os.path.isfile(mp3)])
+   # print("the total number of mp3 files in this folder is {}".format(audio_number))
+    if exists(file_name) is True:
+        file_name="{}{}{}{}.mp3".format(region,person,ts,audio_number)
+    file_path="mp3\{}".format(file_name)
+    
+    file_config = speechsdk.audio.AudioOutputConfig(filename=file_path)
     speech_synthesizer = speechsdk.SpeechSynthesizer(speech_config=speech_config, audio_config=file_config)
 
        # Subscribes to events
@@ -61,6 +65,7 @@ def speech_synthesis_to_mp3_file(region='en-US',person='JennyNeural', text="This
     speech_synthesizer.synthesis_completed.connect(lambda evt: print("Synthesis completed: {}".format(evt)))
     
     result = speech_synthesizer.speak_text_async(text).get()
+    os.chmod('mp3',0o77)
         # Check result
     if result.reason == speechsdk.ResultReason.SynthesizingAudioCompleted:
             print("Speech synthesized for text [{}], and the audio was saved to [{}]".format(text, file_name))
@@ -104,15 +109,18 @@ def welcome(request):
                    "text": text2
                    })
 
-def download_mp3(request,file_name):
-    file_path = file_name
-    file_wrapper = FileWrapper(file(file_path,'rb'))
-    file_mimetype = mimetypes.guess_type(file_path)
-    response = HttpResponse(file_wrapper, content_type=file_mimetype )
-    response['X-Sendfile'] = file_path
-    response['Content-Length'] = os.stat(file_path).st_size
-    response['Content-Disposition'] = 'attachment; filename=%s/' % smart_str(file_name) 
+def download_mp3_page(request,file_name):
+    
     return response
+
+def download_mp3(request,file_name):
+    fl_path = 'mp3/'+file_name
+    fl = open(fl_path, 'rb')
+    mime_type, _ = mimetypes.guess_type(fl_path)
+    response = HttpResponse(fl, content_type=mime_type)
+    response['Content-Disposition'] = "attachment; filename=%s" % file_name
+    return response
+
 
 def about(request):
     return HttpResponse("This is a project created during the Fix, Hack, Learn week long event at E+D") 

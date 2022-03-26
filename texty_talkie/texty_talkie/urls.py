@@ -15,12 +15,12 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from website.views import welcome, about,download_mp3
+from website.views import welcome, about,download_mp3,download_mp3_page
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', welcome,name="welcome"),
     path('about',about,name="about"),
     path("download_mp3",download_mp3,name="download_mp3"),
-    path("<str:file_name>",download_mp3,name="download_mp3")
+    path('mp3/<str:file_name>',download_mp3,name="download_mp3")
 ]

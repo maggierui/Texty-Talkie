@@ -199,7 +199,7 @@ def speech_synthesis_to_mp3_file():
     """performs speech synthesis to an mp3 file"""
     # Creates an instance of a speech config with specified subscription key and service region.
     speech_config = speechsdk.SpeechConfig(subscription=speech_key, region=service_region)
-    print(speech_config)
+
 
     # Sets the synthesis output format.
     # The full list of supported format can be found here:

@@ -1,6 +1,11 @@
-{% extends 'base.html' %}
-{%block title%} Download Mp3 Audio File {% endblock %}
-
- {% block content %} 
-Click <a href="../{{file_name}}"> here </a> to download the mp3 file. 
-{% endblock %}
+{% load static %}
+<!DOCTYPE Content-Disposition: attachment; {{filename}}>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title%}{%endblock %}</title>
+    <link rel="stylesheet" href="{% static 'website/style.css' %}">
+</head>
+<body>
+Click <a href="mp3/{{file_name}}"> here </a> to download the mp3 file. 
+</body>
