@@ -85,7 +85,7 @@ def welcome(request):
         #user has pressed the Preview button
         region=request.POST.get("region") #This line pass the actual region as it gets an integer for the order of the region in Voice region.
         person=request.POST.get("voice_person")
-        text=request.POST.get("sample")           
+        text=request.POST.get("text")           
         print(region)
         print(person)
         print(text)
@@ -94,10 +94,11 @@ def welcome(request):
             return render(request,"website/welcome.html",
             {"message": "Below are all available voices for you to choose from",
              "text": text,
-             "region":region
+             "region":region,
+             "person":person,
               })
         else:
-            speech_synthesis_to_mp3_file(region,person, text)
+            speech_synthesis_to_mp3_file(region,person,text)
             file_name=speech_synthesis_to_mp3_file(region,person, text)
             return render (request,"website/download_mp3.html",
                            {"file_name":file_name})
