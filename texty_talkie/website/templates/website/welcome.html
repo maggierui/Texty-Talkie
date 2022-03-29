@@ -129,35 +129,42 @@ function select(selectId, optionValToSelect){
         }
     }
 }
+// Function to change the list of voices and default text based on selected region
+function list_of_voice_text(region_ID){
+    let region_key = document.getElementById('region').value;
+    let person_select = document.getElementById('voice_person');
+    document.getElementById('text').value=region_voices[region_key].default;
+        // remove all existing person options
+        while (person_select.options.length > 0) {
+            person_select.remove(0);
+          }
+        
+          // add person options
+          if ( ! region_voices[region_key])
+          {
+            alert('missing data for '+region_key);
+            return;
+          }
+          region_voices[region_key].voices.forEach(voice => {
+            let newOption = new Option(voice.label,voice.value);
+            person_select.add(newOption,undefined);
+          });
+        
+          // enable field
+          person_select.disabled = false;
+}
+
+////load default selected region: en-US
+list_of_voice_text('en-US');
+
+/////load selected region
 select("region", selected_region);
 
   ////////////////////////////////////
   // load person from change of region
   document.getElementById('region').addEventListener('change', event => {
-    let region_key = document.getElementById('region').value;
-    let person_select = document.getElementById('voice_person');
-    document.getElementById('text').value=region_voices[region_key].default;
-
-    // remove all existing person options
-    while (person_select.options.length > 0) {
-      person_select.remove(0);
-    }
-  
-    // add person options
-    if ( ! region_voices[region_key])
-    {
-      alert('missing data for '+region_key);
-      return;
-    }
-    region_voices[region_key].voices.forEach(voice => {
-      let newOption = new Option(voice.label,voice.value);
-      person_select.add(newOption,undefined);
-    });
-  
-    // enable field
-    person_select.disabled = false;
-  
-  });
+    list_of_voice_text('region')    
+});
 
 </script>
 {% endblock %}
