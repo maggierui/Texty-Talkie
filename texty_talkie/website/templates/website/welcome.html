@@ -14,6 +14,7 @@
               <select id="voice_person" name="voice_person" selected disabled>
               </select>
               <textarea id ="text" name="text" rows= "8" cols="40">{{text}}</textarea>
+              {{ region|json_script:"selected_region" }}
             {% csrf_token %}
             <button type="submit" name="preview" value="preview"> Preview </button>
             <button type-"submit" name="save" value="save_mp3"> Save as MP3 </button>
@@ -23,6 +24,7 @@
        
     </br>
     </p>
+    
 <script>
 ////////////////////////////////////
 // data
@@ -99,7 +101,7 @@ const region_voices = {
 },
 
   };
-  
+  const selected_region = JSON.parse(document.getElementById('selected_region').textContent);
   ////////////////////////////////////
   // initialize region list
   let region_select = document.getElementById('region');
@@ -107,16 +109,28 @@ const region_voices = {
     let newOption = new Option(region_voices[region].label,region);
     region_select.add(newOption,undefined);
   }
+
+  region_select.value='en-US';
   
-  ////////////////////////////////////
-  //set selected region when reloaded
-  //for (var opt, j=0,opt=region_select.options;j++){
-  //    if (opt.value=={{region}}){
-   //       region_select.selectedIndex=j;
-  //        break;
-   //   }
-  //}
-  
+
+///Function to change selected region and person based on previous POST
+function select(selectId, optionValToSelect){
+    //Get the select element by it's unique ID.
+    var selectElement = document.getElementById(selectId);
+    //Get the options.
+    var selectOptions = selectElement.options;
+    //Loop through these options using a for loop.
+    for (var opt, j = 0; opt = selectOptions[j]; j++) {
+        //If the option of value is equal to the option we want to select.
+        if (opt.value == optionValToSelect) {
+            //Select the option and break out of the for loop.
+            selectElement.selectedIndex = j;
+            break;
+        }
+    }
+}
+select("region", selected_region);
+
   ////////////////////////////////////
   // load person from change of region
   document.getElementById('region').addEventListener('change', event => {
@@ -144,7 +158,6 @@ const region_voices = {
     person_select.disabled = false;
   
   });
-  //// Load default text from change of region
-  document.getElementById()
+
 </script>
 {% endblock %}
